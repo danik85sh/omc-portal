@@ -13,7 +13,6 @@ Single-file Flask app backed by SQLite. Run with `python app.py` (dev) or
 `gunicorn app:app` (production / free cloud tier).
 """
 import os
-import sqlite3
 import secrets
 import smtplib
 from datetime import datetime, timedelta
@@ -31,11 +30,11 @@ except Exception:
     pass
 
 import ai
+import database
 
 # ---------------------------------------------------------------- config
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-me")
-DB_PATH = os.environ.get("DATABASE_PATH", "omc.db")
 BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:5000").rstrip("/")
 DIRECTOR_EMAILS = {e.strip().lower() for e in
                    os.environ.get("DIRECTOR_EMAILS", "").split(",") if e.strip()}
@@ -107,9 +106,7 @@ CREATE TABLE IF NOT EXISTS votes (
 
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA foreign_keys = ON")
+        g.db = database.connect()
     return g.db
 
 
@@ -121,10 +118,7 @@ def close_db(_exc):
 
 
 def init_db():
-    db = sqlite3.connect(DB_PATH)
-    db.executescript(SCHEMA)
-    db.commit()
-    db.close()
+    database.init(SCHEMA)
 
 
 # ---------------------------------------------------------------- helpers
@@ -361,7 +355,7 @@ def new_meeting():
         db = get_db()
         cur = db.execute(
             "INSERT INTO meetings (title, scheduled_for, location, notes, created_at) "
-            "VALUES (?,?,?,?,?)", (title, scheduled_for, location, notes, now()))
+            "VALUES (?,?,?,?,?) RETURNING id", (title, scheduled_for, location, notes, now()))
         db.commit()
         return redirect(url_for("meeting", meeting_id=cur.lastrowid))
     return render_template("new_meeting.html")
@@ -437,7 +431,7 @@ def new_poll():
         db = get_db()
         cur = db.execute(
             "INSERT INTO polls (meeting_id, question, closes_at, created_at) "
-            "VALUES (?,?,?,?)", (meeting_id, question, closes_at, now()))
+            "VALUES (?,?,?,?) RETURNING id", (meeting_id, question, closes_at, now()))
         pid = cur.lastrowid
         for label in options:
             db.execute("INSERT INTO poll_options (poll_id, label) VALUES (?,?)",
