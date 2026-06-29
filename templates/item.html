@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ item['title'] }} · OMC Portal{% endblock %}
+{% block content %}
+<a class="muted" href="{{ url_for('agenda') }}">← Back to agenda</a>
+<section class="card">
+  <h1>{{ item['title'] }}</h1>
+  <p class="meta">
+    <span class="pri {{ item['ai_priority'] }}">{{ item['ai_priority'] }}</span>
+    <span class="tag">{{ item['ai_category'] }}</span>
+    <span class="status {{ item['status'] }}">{{ item['status'] }}</span>
+    <span class="muted">·
+      {% if item['is_anonymous'] %}anonymous{% else %}{{ item['author_email'] or '—' }}{% endif %}
+      · {{ item['created_at'] }}</span>
+  </p>
+
+  <div class="ai-box">
+    <strong>🤖 AI analysis</strong>
+    <p><b>Summary:</b> {{ item['ai_summary'] }}</p>
+    <p><b>Suggested agenda point:</b> {{ item['ai_point'] }}</p>
+  </div>
+
+  <h3>Original message</h3>
+  <p class="body">{{ item['body'] }}</p>
+</section>
+
+{% if user and user['role'] == 'director' %}
+<section class="card">
+  <h3>Director actions</h3>
+  <form method="post" action="{{ url_for('item_status', item_id=item['id']) }}">
+    <label>Status
+      <select name="status">
+        {% for s in ['open','scheduled','resolved','rejected'] %}
+          <option value="{{ s }}" {{ 'selected' if item['status']==s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Assign to meeting ID <span class="muted small">(optional)</span>
+      <input type="number" name="meeting_id" value="{{ item['meeting_id'] or '' }}">
+    </label>
+    <button class="btn" type="submit">Update</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

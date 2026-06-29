@@ -1,0 +1,41 @@
+{# Renders one poll with a vote form (if open & signed in) and live results. #}
+<div class="poll">
+  <div class="poll-head">
+    <h3>{{ pr['poll']['question'] }}</h3>
+    <span class="status {{ 'resolved' if pr['poll']['is_closed'] else 'open' }}">
+      {{ 'closed' if pr['poll']['is_closed'] else 'open' }}</span>
+  </div>
+
+  {% if user and not pr['poll']['is_closed'] %}
+    <form method="post" action="{{ url_for('vote', poll_id=pr['poll']['id']) }}" class="vote-form">
+      {% for o in pr['options'] %}
+        <label class="opt">
+          <input type="radio" name="option_id" value="{{ o['id'] }}"
+                 {{ 'checked' if pr['my_vote']==o['id'] }}>
+          {{ o['label'] }}
+        </label>
+      {% endfor %}
+      <button class="btn small" type="submit">
+        {{ 'Change vote' if pr['my_vote'] else 'Vote' }}</button>
+    </form>
+  {% elif not user %}
+    <p class="muted small"><a href="{{ url_for('login') }}">Sign in</a> to vote.</p>
+  {% endif %}
+
+  <div class="results">
+    {% for o in pr['options'] %}
+      <div class="bar-row">
+        <span class="bar-label">{{ o['label'] }}{% if pr['my_vote']==o['id'] %} ✓{% endif %}</span>
+        <span class="bar"><span class="bar-fill" style="width: {{ o['pct'] }}%"></span></span>
+        <span class="bar-num">{{ o['count'] }} ({{ o['pct'] }}%)</span>
+      </div>
+    {% endfor %}
+    <p class="muted small">{{ pr['total'] }} vote(s) total.</p>
+  </div>
+
+  {% if user and user['role'] == 'director' and not pr['poll']['is_closed'] %}
+    <form method="post" action="{{ url_for('close_poll', poll_id=pr['poll']['id']) }}">
+      <button class="btn small ghost" type="submit">Close poll</button>
+    </form>
+  {% endif %}
+</div>

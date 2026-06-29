@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Agenda · OMC Portal{% endblock %}
+{% block content %}
+<div class="head-row">
+  <h1>Agenda items</h1>
+  <a class="btn" href="{{ url_for('new_item') }}">Post an item</a>
+</div>
+<p class="muted">Ranked by AI-assessed priority. Each item shows the AI summary
+   and the suggested discussion point.</p>
+
+{% if items %}
+<table class="tbl">
+  <thead><tr><th>Priority</th><th>Item</th><th>Category</th>
+             <th>Suggested discussion point</th><th>From</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for it in items %}
+    <tr>
+      <td><span class="pri {{ it['ai_priority'] }}">{{ it['ai_priority'] }}</span></td>
+      <td><a href="{{ url_for('item', item_id=it['id']) }}">{{ it['title'] }}</a></td>
+      <td>{{ it['ai_category'] }}</td>
+      <td class="point">{{ it['ai_point'] }}</td>
+      <td>{% if it['is_anonymous'] %}<em class="muted">anonymous</em>
+          {% else %}{{ it['author_email'] or '—' }}{% endif %}</td>
+      <td><span class="status {{ it['status'] }}">{{ it['status'] }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <p class="muted">No agenda items yet. Be the first to post one.</p>
+{% endif %}
+{% endblock %}

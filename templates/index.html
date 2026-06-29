@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Owners' Management Company Portal</h1>
+  <p>Post items for the next meeting, see what's on the agenda, and vote on
+     decisions. Submit with your email or anonymously — every submission is
+     analysed and turned into a discussion point automatically.</p>
+  <a class="btn" href="{{ url_for('new_item') }}">Post an agenda item</a>
+</section>
+
+<div class="grid">
+  <section class="card">
+    <h2>Open agenda items</h2>
+    {% if items %}
+      <ul class="list">
+        {% for it in items %}
+          <li>
+            <a href="{{ url_for('item', item_id=it['id']) }}">{{ it['title'] }}</a>
+            <span class="pri {{ it['ai_priority'] }}">{{ it['ai_priority'] }}</span>
+            <small class="muted">{{ it['ai_category'] }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No open items yet.</p>
+    {% endif %}
+    <a href="{{ url_for('agenda') }}">View full agenda →</a>
+  </section>
+
+  <section class="card">
+    <h2>Upcoming meetings</h2>
+    {% if meetings %}
+      <ul class="list">
+        {% for m in meetings %}
+          <li>
+            <a href="{{ url_for('meeting', meeting_id=m['id']) }}">{{ m['title'] }}</a>
+            <small class="muted">{{ m['scheduled_for'] or 'date TBD' }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No meetings scheduled yet.</p>
+    {% endif %}
+    <a href="{{ url_for('meetings') }}">All meetings →</a>
+  </section>
+
+  <section class="card">
+    <h2>Open votes</h2>
+    {% if polls %}
+      <ul class="list">
+        {% for p in polls %}
+          <li><a href="{{ url_for('polls') }}">{{ p['question'] }}</a></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No open votes.</p>
+    {% endif %}
+    <a href="{{ url_for('polls') }}">Go to votes →</a>
+  </section>
+</div>
+{% endblock %}

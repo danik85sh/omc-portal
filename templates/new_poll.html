@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Create a poll · OMC Portal{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Create a poll</h1>
+  <form method="post">
+    <label>Question
+      <input type="text" name="question" required
+             placeholder="e.g. Which date suits the AGM? / Approve the 2026 budget?">
+    </label>
+
+    <fieldset>
+      <legend>Options</legend>
+      <div id="opts">
+        <input type="text" name="options" placeholder="Option 1">
+        <input type="text" name="options" placeholder="Option 2">
+        <input type="text" name="options" placeholder="Option 3">
+        <input type="text" name="options" placeholder="Option 4">
+      </div>
+    </fieldset>
+
+    <label>Attach to meeting <span class="muted small">(optional)</span>
+      <select name="meeting_id">
+        <option value="">— none —</option>
+        {% for m in meetings %}
+          <option value="{{ m['id'] }}">{{ m['title'] }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Closes at <span class="muted small">(optional)</span>
+      <input type="datetime-local" name="closes_at">
+    </label>
+
+    <button class="btn" type="submit">Create poll</button>
+  </form>
+</section>
+{% endblock %}

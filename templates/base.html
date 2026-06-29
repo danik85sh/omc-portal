@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}OMC Portal{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}">🏢 OMC&nbsp;Portal</a>
+  <nav>
+    <a href="{{ url_for('agenda') }}">Agenda</a>
+    <a href="{{ url_for('meetings') }}">Meetings</a>
+    <a href="{{ url_for('polls') }}">Votes</a>
+    <a href="{{ url_for('new_item') }}">Post an item</a>
+  </nav>
+  <div class="who">
+    {% if user %}
+      <span class="badge {{ user['role'] }}">{{ user['role'] }}</span>
+      <span class="email">{{ user['email'] }}</span>
+      <a href="{{ url_for('logout') }}">Sign out</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Sign in</a>
+    {% endif %}
+  </div>
+</header>
+
+<main class="wrap">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+      <div class="flash {{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="foot">OMC Portal · owners &amp; directors · free / self-hosted</footer>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Post an item · OMC Portal{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Post an agenda item</h1>
+  <p class="muted">Describe an issue or proposal for the next meeting. It will be
+     analysed and added to the agenda as a discussion point.</p>
+  <form method="post">
+    <label>Subject
+      <input type="text" name="title" required maxlength="200"
+             placeholder="e.g. Broken lift in Block B">
+    </label>
+    <label>Your message
+      <textarea name="body" rows="7" required
+                placeholder="Describe the issue, proposal or question..."></textarea>
+    </label>
+
+    {% if not user %}
+    <label>Your email <span class="muted small">(optional — shown to directors)</span>
+      <input type="email" name="email" placeholder="you@example.com">
+    </label>
+    {% else %}
+      <p class="muted small">Posting as {{ user['email'] }} (unless you choose anonymous).</p>
+    {% endif %}
+
+    <label class="check">
+      <input type="checkbox" name="anonymous"> Post anonymously (hide my email)
+    </label>
+
+    <button class="btn" type="submit">Submit to agenda</button>
+  </form>
+</section>
+{% endblock %}

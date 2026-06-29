@@ -1,0 +1,28 @@
+# Free-tier deploy config for Render.com (https://render.com).
+# Create a new "Blueprint" from your repo and Render reads this file.
+services:
+  - type: web
+    name: omc-portal
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: BASE_URL
+        sync: false
+      - key: DIRECTOR_EMAILS
+        sync: false
+      - key: DATABASE_PATH
+        value: /var/data/omc.db
+      - key: AI_ENABLED
+        value: "1"
+      - key: AI_PROVIDER
+        value: groq
+      - key: GROQ_API_KEY
+        sync: false   # set this in the Render dashboard (free key, no card)
+    disk:
+      name: omc-data
+      mountPath: /var/data
+      sizeGB: 1

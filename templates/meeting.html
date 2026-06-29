@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ meeting['title'] }} · OMC Portal{% endblock %}
+{% block content %}
+<a class="muted" href="{{ url_for('meetings') }}">← All meetings</a>
+<section class="card">
+  <h1>{{ meeting['title'] }}</h1>
+  <p class="meta">
+    <span class="status {{ meeting['status'] }}">{{ meeting['status'] }}</span>
+    <span class="muted">{{ meeting['scheduled_for'] or 'date to be decided' }}
+      {% if meeting['location'] %} · {{ meeting['location'] }}{% endif %}</span>
+  </p>
+  {% if meeting['notes'] %}<p class="body">{{ meeting['notes'] }}</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Agenda for this meeting</h2>
+  {% if items %}
+    <ol class="agenda-list">
+      {% for it in items %}
+        <li>
+          <a href="{{ url_for('item', item_id=it['id']) }}">{{ it['title'] }}</a>
+          <span class="pri {{ it['ai_priority'] }}">{{ it['ai_priority'] }}</span>
+          <div class="muted small">{{ it['ai_point'] }}</div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted">No items attached yet.</p>
+  {% endif %}
+
+  {% if user and user['role'] == 'director' and unassigned %}
+    <details>
+      <summary>Attach an open item to this meeting</summary>
+      {% for it in unassigned %}
+        <form method="post" action="{{ url_for('item_status', item_id=it['id']) }}" class="inline">
+          <input type="hidden" name="status" value="scheduled">
+          <input type="hidden" name="meeting_id" value="{{ meeting['id'] }}">
+          <button class="btn small ghost" type="submit">+ {{ it['title'] }}</button>
+        </form>
+      {% endfor %}
+    </details>
+  {% endif %}
+</section>
+
+<section class="card">
+  <div class="head-row">
+    <h2>Votes for this meeting</h2>
+    {% if user and user['role'] == 'director' %}
+      <a class="btn small" href="{{ url_for('new_poll') }}">Add a poll</a>
+    {% endif %}
+  </div>
+  {% if polls %}
+    {% for pr in polls %}{% include "_poll.html" %}{% endfor %}
+  {% else %}
+    <p class="muted">No polls for this meeting.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Meetings · OMC Portal{% endblock %}
+{% block content %}
+<div class="head-row">
+  <h1>Meetings</h1>
+  {% if user and user['role'] == 'director' %}
+    <a class="btn" href="{{ url_for('new_meeting') }}">Schedule a meeting</a>
+  {% endif %}
+</div>
+
+{% if meetings %}
+  <ul class="list big">
+    {% for m in meetings %}
+      <li>
+        <a href="{{ url_for('meeting', meeting_id=m['id']) }}">{{ m['title'] }}</a>
+        <span class="status {{ m['status'] }}">{{ m['status'] }}</span>
+        <div class="muted small">
+          {{ m['scheduled_for'] or 'date to be decided' }}
+          {% if m['location'] %} · {{ m['location'] }}{% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="muted">No meetings yet.
+    {% if not user or user['role'] != 'director' %}A director can schedule one.{% endif %}</p>
+{% endif %}
+{% endblock %}

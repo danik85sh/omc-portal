@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Schedule a meeting · OMC Portal{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Schedule a meeting</h1>
+  <form method="post">
+    <label>Title
+      <input type="text" name="title" required placeholder="e.g. AGM 2026 / Q3 Owners' Meeting">
+    </label>
+    <label>Date &amp; time
+      <input type="datetime-local" name="scheduled_for">
+    </label>
+    <label>Location
+      <input type="text" name="location" placeholder="e.g. Community room / Zoom link">
+    </label>
+    <label>Notes
+      <textarea name="notes" rows="4" placeholder="Any details for owners..."></textarea>
+    </label>
+    <button class="btn" type="submit">Create meeting</button>
+  </form>
+  <p class="muted small">After creating, you can attach agenda items and add a
+     poll (e.g. to confirm the date or vote on a motion).</p>
+</section>
+{% endblock %}

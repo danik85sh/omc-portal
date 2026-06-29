@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Votes · OMC Portal{% endblock %}
+{% block content %}
+<div class="head-row">
+  <h1>Votes &amp; polls</h1>
+  {% if user and user['role'] == 'director' %}
+    <a class="btn" href="{{ url_for('new_poll') }}">Create a poll</a>
+  {% endif %}
+</div>
+
+{% if polls %}
+  {% for pr in polls %}
+    <section class="card">{% include "_poll.html" %}</section>
+  {% endfor %}
+{% else %}
+  <p class="muted">No polls yet.</p>
+{% endif %}
+{% endblock %}
