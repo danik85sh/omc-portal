@@ -68,9 +68,17 @@ You'll be an admin and can schedule meetings and create polls.
 
 ---
 
+### Persistent data (important)
+Render's **free** tier does not allow a persistent disk, so the SQLite database
+resets whenever the service redeploys or restarts. Options:
+- **Just trying it out:** leave as-is (data is temporary).
+- **Durable, still cheap:** add a paid disk ($1–2/mo) — re-add the `disk:` block
+  in `render.yaml` and point `DATABASE_PATH` at its mount path.
+- **Durable & free:** create a free **PostgreSQL** instance on Render and switch
+  the app's storage to it (small code change — ask and it can be added).
+
 ### Notes
 - **Free-tier sleep:** Render's free web service spins down after ~15 min idle;
   the first visit after that takes ~30s to wake. Fine for an OMC site.
-- **Backups:** the database is the single file at `/var/data/omc.db` on the disk.
 - **Other hosts:** the included `Procfile` (`web: gunicorn app:app`) also works on
   Railway, Fly.io, Heroku, etc. — set the same env vars there.
