@@ -15,14 +15,13 @@ services:
       - key: DIRECTOR_EMAILS
         sync: false
       - key: DATABASE_PATH
-        value: /var/data/omc.db
+        value: omc.db   # ephemeral on free tier (resets on redeploy/restart)
       - key: AI_ENABLED
         value: "1"
       - key: AI_PROVIDER
         value: groq
       - key: GROQ_API_KEY
         sync: false   # set this in the Render dashboard (free key, no card)
-    disk:
-      name: omc-data
-      mountPath: /var/data
-      sizeGB: 1
+# NOTE: Render's free tier does not support persistent disks, so the SQLite
+# file above is wiped on each deploy/restart. For durable data, upgrade to a
+# paid disk OR switch to Render's PostgreSQL (see DEPLOY.md "Persistent data").
