@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from functools import wraps
 
+import requests
 from flask import (Flask, g, redirect, render_template, request, session,
                    url_for, flash, abort)
 
@@ -164,22 +165,49 @@ def director_required(view):
 
 
 def send_login_email(email, link):
-    host = os.environ.get("SMTP_HOST")
-    if not host:
-        # No SMTP configured: log the link (fine for local / lab testing).
-        print(f"\n[magic-link] for {email}:\n  {link}\n")
-        return
-    msg = EmailMessage()
-    msg["Subject"] = "Your OMC Portal sign-in link"
-    msg["From"] = os.environ.get("SMTP_FROM", "omc-portal@example.com")
-    msg["To"] = email
-    msg.set_content(f"Click to sign in (valid {TOKEN_TTL_MIN} minutes):\n\n{link}\n")
-    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", 587))) as s:
-        s.starttls()
-        user = os.environ.get("SMTP_USER")
-        if user:
-            s.login(user, os.environ.get("SMTP_PASSWORD", ""))
-        s.send_message(msg)
+    """Send the magic-link email. Prefers the Brevo HTTP API (port 443), which
+    works on hosts that block SMTP ports such as Render. Falls back to SMTP,
+    then to logging. Never raises — sign-in must not 500 if mail fails."""
+    subject = "Your OMC Portal sign-in link"
+    text = f"Click to sign in (valid {TOKEN_TTL_MIN} minutes):\n\n{link}\n"
+    sender = os.environ.get("SMTP_FROM", "omc-portal@example.com")
+    try:
+        brevo_key = os.environ.get("BREVO_API_KEY")
+        if brevo_key:
+            r = requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": brevo_key,
+                         "accept": "application/json",
+                         "content-type": "application/json"},
+                json={"sender": {"email": sender, "name": "OMC Portal"},
+                      "to": [{"email": email}],
+                      "subject": subject,
+                      "textContent": text},
+                timeout=15)
+            r.raise_for_status()
+            print(f"[mail] Brevo API: sent to {email}")
+            return True
+        host = os.environ.get("SMTP_HOST")
+        if host:
+            msg = EmailMessage()
+            msg["Subject"] = subject
+            msg["From"] = sender
+            msg["To"] = email
+            msg.set_content(text)
+            with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", 587)),
+                              timeout=15) as s:
+                s.starttls()
+                user = os.environ.get("SMTP_USER")
+                if user:
+                    s.login(user, os.environ.get("SMTP_PASSWORD", ""))
+                s.send_message(msg)
+            print(f"[mail] SMTP: sent to {email}")
+            return True
+    except Exception as exc:  # noqa: BLE001
+        print(f"[mail] send failed ({exc}); link logged below.")
+    # Fallback: log the link so sign-in still works.
+    print(f"\n[magic-link] for {email}:\n  {link}\n")
+    return False
 
 
 # ---------------------------------------------------------------- auth
