@@ -256,6 +256,13 @@ def logout():
     return redirect(url_for("index"))
 
 
+# ---------------------------------------------------------------- health
+@app.route("/healthz")
+def healthz():
+    """Lightweight keep-alive / uptime check. No DB access."""
+    return "ok", 200
+
+
 # ---------------------------------------------------------------- home / agenda
 @app.route("/")
 def index():
